@@ -772,6 +772,10 @@
         "text": {
           "type": "string",
           "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "description": "Entity this notice refers to, when applicable."
         }
       }
     },
@@ -1085,6 +1089,10 @@
             "open",
             "done"
           ]
+        },
+        "ref": {
+          "type": "string",
+          "description": "Entity this task refers to (ferry/venue/accommodation id), when applicable."
         }
       }
     },
@@ -1294,137 +1302,9 @@
       "type": "string",
       "pattern": "^(waypoint|accommodation):[a-z0-9][a-z0-9-]*$"
     },
-    "routeMapMarker": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ref"
-      ],
-      "properties": {
-        "ref": {
-          "$ref": "#/$defs/routeMapRef"
-        },
-        "icon": {
-          "type": "string",
-          "enum": [
-            "default",
-            "accent",
-            "end"
-          ]
-        }
-      }
-    },
-    "routeMapFerry": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "ferry",
-        "from",
-        "to"
-      ],
-      "properties": {
-        "ferry": {
-          "type": "string"
-        },
-        "from": {
-          "$ref": "#/$defs/routeMapRef"
-        },
-        "to": {
-          "$ref": "#/$defs/routeMapRef"
-        }
-      }
-    },
-    "routeMapRoute": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "day",
-        "color",
-        "locations"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "day": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "color": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$"
-        },
-        "locations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/routeMapRef"
-          },
-          "minItems": 2
-        }
-      }
-    },
-    "routeMapCacheRoute": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "coordinates"
-      ],
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "coordinates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/mapCoordinate"
-          },
-          "minItems": 2
-        }
-      }
-    },
-    "routeMapCache": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "provider",
-        "profile",
-        "updatedAt",
-        "routes"
-      ],
-      "properties": {
-        "provider": {
-          "type": "string",
-          "const": "mapbox"
-        },
-        "profile": {
-          "type": "string",
-          "const": "driving"
-        },
-        "updatedAt": {
-          "type": "string"
-        },
-        "routes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/routeMapCacheRoute"
-          }
-        }
-      }
-    },
     "routeMap": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "center",
-        "zoom",
-        "markers",
-        "ferries",
-        "routes",
-        "googleMaps",
-        "cache"
-      ],
       "properties": {
         "center": {
           "$ref": "#/$defs/coordinates"
@@ -1434,35 +1314,11 @@
           "minimum": 1,
           "maximum": 20
         },
-        "markers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/routeMapMarker"
-          },
-          "minItems": 1
-        },
-        "ferries": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/routeMapFerry"
-          }
-        },
         "routes": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/routeMapRoute"
-          },
-          "minItems": 1
-        },
-        "googleMaps": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/routeMapRef"
-          },
-          "minItems": 2
-        },
-        "cache": {
-          "$ref": "#/$defs/routeMapCache"
+            "$ref": "#/$defs/routeEntry"
+          }
         }
       }
     },
@@ -1549,6 +1405,75 @@
         }
       },
       "description": "Cost of an item or booking: amount is the quoted price (per unit when unit/units are set); total is the canonical final figure (after discounts); paid is the card-currency amount actually paid, when it differs; status is the payment state."
+    },
+    "routeEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "day",
+        "color",
+        "segments"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "day": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mapCoordinate"
+          },
+          "minItems": 2
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeSegment"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "routeSegment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/routeMapRef"
+        },
+        "to": {
+          "$ref": "#/$defs/routeMapRef"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "drive",
+            "ferry",
+            "walk",
+            "flight"
+          ]
+        },
+        "geometry": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mapCoordinate"
+          },
+          "minItems": 2
+        }
+      }
     }
   }
 }
