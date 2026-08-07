@@ -7,7 +7,7 @@ Public JSON Schemas for Mocito projects, published at
 
 | Schema | URI |
 |---|---|
-| Trip document v1 | `schemas/trip-v1.json` → https://mocito.dev/schemas/trip-v1.json |
+| Trip document v1 | `assets/schemas/trip-v1.json` → https://mocito.dev/schemas/trip-v1.json |
 
 One JSON file per trip, validated on import. The schema evolves **additively in
 place**; a breaking change ships a new version file (`trip-v2.json`) and bumps
@@ -29,7 +29,7 @@ retrieval URI:
 Validate locally:
 
 ```sh
-npx ajv-cli validate -s schemas/trip-v1.json -d trip.json --spec=draft2020
+npx ajv-cli validate -s assets/schemas/trip-v1.json -d trip.json --spec=draft2020
 ```
 
 ## Serving
