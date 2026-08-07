@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://mocito.dev/schemas/trip-v1.json",
   "title": "Trpy trip",
-  "description": "Canonical Trpy trip document: one JSON file per trip, validated on import. The schema evolves additively; schemaVersion is bumped only for breaking changes.",
+  "description": "Canonical Trpy trip document: one JSON file per trip, validated on import. The schema evolves additively; schemaVersion is bumped only for breaking changes. Costs (cost/estimate/admission) record prices in the currency they were quoted in, usually local; charge records the card-currency amount actually paid, when the two differ.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -428,6 +428,14 @@
         "cost": {
           "$ref": "#/$defs/money"
         },
+        "discount": {
+          "$ref": "#/$defs/money",
+          "description": "Discount applied to the rental price."
+        },
+        "pending": {
+          "$ref": "#/$defs/money",
+          "description": "Amount still owed or pending (e.g. payable locally at pickup)."
+        },
         "rateCode": {
           "type": "string"
         },
@@ -633,7 +641,7 @@
           "type": "string"
         },
         "parking": {
-          "type": "string"
+          "$ref": "#/$defs/parking"
         },
         "breakfast": {
           "type": "boolean"
@@ -644,6 +652,14 @@
         },
         "cost": {
           "$ref": "#/$defs/money"
+        },
+        "charge": {
+          "$ref": "#/$defs/money",
+          "description": "Amount actually charged to the payment card (card currency), when paid."
+        },
+        "paidAt": {
+          "$ref": "#/$defs/date",
+          "description": "Date the booking was paid."
         },
         "status": {
           "type": "string",
@@ -696,6 +712,30 @@
           ]
         },
         "cancellation": {
+          "type": "string"
+        },
+        "total": {
+          "$ref": "#/$defs/money",
+          "description": "Canonical booking total (multi-night/whole booking), when cost is a per-night display split."
+        }
+      }
+    },
+    "parking": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "free": {
+          "type": "boolean",
+          "description": "Whether parking is free of charge."
+        },
+        "costPerDay": {
+          "$ref": "#/$defs/money",
+          "description": "Daily parking cost, when paid."
+        },
+        "reservationRequired": {
+          "type": "boolean"
+        },
+        "note": {
           "type": "string"
         }
       }
@@ -1024,6 +1064,21 @@
             "recommended"
           ]
         },
+        "cost": {
+          "$ref": "#/$defs/money",
+          "description": "Total fare in local currency."
+        },
+        "charge": {
+          "$ref": "#/$defs/money",
+          "description": "Amount actually charged to the payment card (card currency), when paid."
+        },
+        "paidAt": {
+          "$ref": "#/$defs/date",
+          "description": "Date the fare was paid."
+        },
+        "booking": {
+          "$ref": "#/$defs/booking"
+        },
         "bookingNote": {
           "type": "string"
         },
@@ -1058,6 +1113,10 @@
         },
         "access": {
           "type": "string"
+        },
+        "pricePerKwh": {
+          "$ref": "#/$defs/money",
+          "description": "Observed price per kWh in local currency (primary connector)."
         },
         "notes": {
           "type": "string"
@@ -1115,7 +1174,8 @@
           "type": "string",
           "enum": [
             "planned",
-            "alternative"
+            "alternative",
+            "paid"
           ]
         },
         "estimate": {
@@ -1127,6 +1187,18 @@
               "$ref": "#/$defs/moneyRange"
             }
           ]
+        },
+        "cost": {
+          "$ref": "#/$defs/money",
+          "description": "Source price in local currency."
+        },
+        "charge": {
+          "$ref": "#/$defs/money",
+          "description": "Amount actually charged to the payment card (card currency), when paid."
+        },
+        "ref": {
+          "type": "string",
+          "description": "Entity this item refers to (ferry/venue/accommodation id), when applicable."
         },
         "notes": {
           "type": "string"
@@ -1166,6 +1238,23 @@
             "planned",
             "alternative"
           ]
+        },
+        "admission": {
+          "$ref": "#/$defs/money",
+          "description": "Admission price in local currency (family total unless admissionNote says otherwise)."
+        },
+        "admissionNote": {
+          "type": "string",
+          "description": "Ticket-type basis for admission (e.g. 'family ticket, 2 adults + 1 child')."
+        },
+        "openingHours": {
+          "type": "string",
+          "description": "Opening hours or visit window in free text."
+        },
+        "minAge": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum age for the visit/activity, when applicable."
         },
         "reviews": {
           "$ref": "#/$defs/reviewSummary"
@@ -1217,7 +1306,6 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "exchangeRate",
         "variableCosts",
         "notes"
       ],

@@ -12,7 +12,9 @@ Public JSON Schemas for Jose Mocito projects, published at
 One JSON file per trip, validated on import. The schema evolves **additively in
 place**; a breaking change ships a new version file (`trip-v2.json`) and bumps
 the document's `schemaVersion`. Published version files are immutable — old
-URIs keep working forever.
+URIs keep working forever. v1 absorbed the initial round of structural changes
+in place, before any external consumers; the immutability policy applies from
+the current state onward.
 
 Documents reference the schema via `$schema` and the schema's `$id` is its
 retrieval URI:
