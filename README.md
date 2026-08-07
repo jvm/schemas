@@ -31,3 +31,18 @@ Validate locally:
 ```sh
 npx ajv-cli validate -s schemas/trip-v1.json -d trip.json --spec=draft2020
 ```
+
+## Serving
+
+The URIs are served by a Cloudflare Worker (static assets) on the
+`mocito.dev/schemas/*` route — no DNS records involved, the route takes
+precedence at the edge. The `assets/` directory mirrors the public URL paths.
+
+Publish changes:
+
+```sh
+npx wrangler deploy
+```
+
+The GitHub Pages setup (`CNAME` file) doubles as a fallback: the old
+`jvm.github.io/schemas/` URL redirects to the canonical URIs.

@@ -1,0 +1,13 @@
+name = "schemas"
+compatibility_date = "2025-05-01"
+
+# Static assets served at mocito.dev/schemas/* — Worker routes take precedence
+# over the zone's DNS records, so no DNS changes are needed. Asset paths mirror
+# the URL path (docs: "Serving a subdirectory").
+[assets]
+directory = "./assets"
+not_found_handling = "404-page"
+
+routes = [
+  { pattern = "mocito.dev/schemas/*", zone_name = "mocito.dev" },
+]
