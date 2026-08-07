@@ -1,0 +1,1495 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mocito.dev/schemas/trip-v1.json",
+  "title": "Trpy trip",
+  "description": "Canonical Trpy trip document: one JSON file per trip, validated on import. The schema evolves additively; schemaVersion is bumped only for breaking changes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "id",
+    "title",
+    "summary",
+    "timezone",
+    "dates",
+    "travelers",
+    "locale",
+    "days"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Trpy schema version this document targets. Bumped only for breaking changes; additive changes do not bump. The app validates against the current version and migrates older documents forward."
+    },
+    "locale": {
+      "$ref": "#/$defs/localeKey",
+      "description": "Source language of all translatable text (BCP-47 language-Region, e.g. en-US, pt-PT)."
+    },
+    "translations": {
+      "$ref": "#/$defs/translations",
+      "description": "Per-locale translation overlays keyed by RFC 6901 JSON Pointer. Render deep-merges the active locale over the base; missing pointers fall back to the source locale."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "Short trip description (one paragraph). Shown on trip cards and the trip header."
+    },
+    "image": {
+      "type": "string",
+      "description": "Optional cover/hero image URL for the trip (third-party, hotlinkable)."
+    },
+    "imageCredits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/imageCredit"
+      },
+      "description": "Attribution metadata for third-party images used by this trip."
+    },
+    "timezone": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dates": {
+      "$ref": "#/$defs/dateRange"
+    },
+    "travelers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/traveler"
+      },
+      "minItems": 1
+    },
+    "route": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "separator": {
+            "type": "string"
+          },
+          "ferry": {
+            "type": "boolean"
+          }
+        }
+      },
+      "minItems": 2
+    },
+    "vehicle": {
+      "$ref": "#/$defs/vehicle"
+    },
+    "verification": {
+      "$ref": "#/$defs/verification"
+    },
+    "flights": {
+      "$ref": "#/$defs/flights"
+    },
+    "accommodations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/accommodation"
+      },
+      "minItems": 1
+    },
+    "ferries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ferry"
+      }
+    },
+    "charging": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/charging"
+      }
+    },
+    "days": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/day"
+      },
+      "minItems": 1
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    },
+    "budget": {
+      "$ref": "#/$defs/budget"
+    },
+    "venueReviews": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/venueReview"
+      },
+      "minItems": 1
+    },
+    "waypoints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/waypoint"
+      }
+    },
+    "routeMap": {
+      "$ref": "#/$defs/routeMap"
+    }
+  },
+  "$defs": {
+    "imageCredit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "source",
+        "credit",
+        "license"
+      ],
+      "properties": {
+        "image": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "credit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "localeKey": {
+      "type": "string",
+      "pattern": "^[a-z]{2}-[A-Z]{2}$",
+      "description": "BCP-47 language-Region tag, e.g. en-US, pt-PT."
+    },
+    "translations": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z]{2}-[A-Z]{2}$": {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^/": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Translated string for the field at this RFC 6901 JSON Pointer."
+            }
+          },
+          "description": "One locale's overlay: JSON Pointer -> translated string."
+        }
+      },
+      "description": "Locale -> (JSON Pointer -> translated string). Additive overlay over the source-locale base document."
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+    },
+    "dateRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/date"
+        },
+        "end": {
+          "$ref": "#/$defs/date"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "money": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "moneyRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "max",
+        "currency"
+      ],
+      "properties": {
+        "min": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lat",
+        "lon"
+      ],
+      "properties": {
+        "lat": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "lon": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "url"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "url"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verifiedAt": {
+          "$ref": "#/$defs/date"
+        }
+      }
+    },
+    "traveler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "vehicle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status",
+        "type",
+        "pickup",
+        "dropoff",
+        "cost",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "reserved",
+            "paid",
+            "cancelled"
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "pickup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "place",
+            "date",
+            "time"
+          ],
+          "properties": {
+            "place": {
+              "type": "string"
+            },
+            "date": {
+              "$ref": "#/$defs/date"
+            },
+            "time": {
+              "$ref": "#/$defs/time"
+            }
+          }
+        },
+        "dropoff": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "place",
+            "date",
+            "time"
+          ],
+          "properties": {
+            "place": {
+              "type": "string"
+            },
+            "date": {
+              "$ref": "#/$defs/date"
+            },
+            "time": {
+              "$ref": "#/$defs/time"
+            }
+          }
+        },
+        "cost": {
+          "$ref": "#/$defs/money"
+        },
+        "rateCode": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "label",
+        "sources",
+        "recheck"
+      ],
+      "properties": {
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "label": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recheck": {
+          "type": "string"
+        }
+      }
+    },
+    "flightSegment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flight",
+        "from",
+        "to",
+        "departure",
+        "arrival",
+        "duration"
+      ],
+      "properties": {
+        "flight": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "aircraft": {
+          "type": "string"
+        },
+        "departure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arrival": {
+          "type": "string",
+          "minLength": 1
+        },
+        "duration": {
+          "type": "string"
+        }
+      }
+    },
+    "flightDay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "label",
+        "segments"
+      ],
+      "properties": {
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "label": {
+          "type": "string"
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/flightSegment"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "flights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "airline",
+        "passengers",
+        "fare",
+        "total",
+        "baggage",
+        "outbound",
+        "return"
+      ],
+      "properties": {
+        "airline": {
+          "type": "string"
+        },
+        "passengers": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fare": {
+          "type": "string"
+        },
+        "total": {
+          "$ref": "#/$defs/money"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "reserved",
+            "paid",
+            "cancelled"
+          ]
+        },
+        "baggage": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outbound": {
+          "$ref": "#/$defs/flightDay"
+        },
+        "return": {
+          "$ref": "#/$defs/flightDay"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "accommodation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "night",
+        "date",
+        "area",
+        "property",
+        "room",
+        "breakfast",
+        "cost",
+        "status",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "night": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "area": {
+          "type": "string"
+        },
+        "property": {
+          "type": "string"
+        },
+        "room": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "coordinates": {
+          "$ref": "#/$defs/coordinates"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "checkIn": {
+          "type": "string"
+        },
+        "checkOut": {
+          "type": "string"
+        },
+        "parking": {
+          "type": "string"
+        },
+        "breakfast": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string",
+          "description": "Optional image URL for this property."
+        },
+        "cost": {
+          "$ref": "#/$defs/money"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "reserved",
+            "paid",
+            "cancelled"
+          ]
+        },
+        "booking": {
+          "$ref": "#/$defs/booking"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "booking": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "confirmation",
+        "status"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "confirmation": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "reserved",
+            "paid",
+            "cancelled"
+          ]
+        },
+        "cancellation": {
+          "type": "string"
+        }
+      }
+    },
+    "scheduleEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "time",
+        "text"
+      ],
+      "properties": {
+        "time": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approximate": {
+          "type": "boolean"
+        },
+        "ferry": {
+          "type": "string"
+        },
+        "ferries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "scheduleEntry": {
+      "$ref": "#/$defs/scheduleEvent"
+    },
+    "routeLeg": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "from",
+        "to",
+        "mode"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "drive",
+            "ferry",
+            "walk",
+            "flight"
+          ]
+        },
+        "distanceKm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "duration": {
+          "type": "string"
+        }
+      }
+    },
+    "notice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "text"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "note",
+            "warn",
+            "ok",
+            "danger"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "intro",
+        "events",
+        "notices"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "intro": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scheduleEvent"
+          }
+        },
+        "notices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/notice"
+          }
+        }
+      }
+    },
+    "daySection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "heading",
+        "items"
+      ],
+      "properties": {
+        "heading": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "day": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "number",
+        "date",
+        "title",
+        "summary",
+        "travel",
+        "daylight",
+        "events",
+        "notices",
+        "plans",
+        "sections"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "travel": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "summary"
+          ],
+          "properties": {
+            "summary": {
+              "type": "string"
+            },
+            "distanceKm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "duration": {
+              "type": "string"
+            },
+            "ferry": {
+              "type": "string"
+            }
+          }
+        },
+        "daylight": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sunrise",
+            "sunset"
+          ],
+          "properties": {
+            "sunrise": {
+              "$ref": "#/$defs/time"
+            },
+            "sunset": {
+              "$ref": "#/$defs/time"
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "overnight": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string",
+          "description": "Optional image URL illustrating this day."
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scheduleEvent"
+          }
+        },
+        "notices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/notice"
+          }
+        },
+        "plans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/plan"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/daySection"
+          }
+        }
+      }
+    },
+    "ferryDeparture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "departure",
+        "arrival"
+      ],
+      "properties": {
+        "departure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arrival": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ferry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "date",
+        "from",
+        "to",
+        "route",
+        "duration",
+        "planned",
+        "alternatives",
+        "reservation",
+        "bookingNote",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "route": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "planned": {
+          "$ref": "#/$defs/ferryDeparture"
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ferryDeparture"
+          }
+        },
+        "reservation": {
+          "type": "string",
+          "enum": [
+            "none",
+            "required",
+            "recommended"
+          ]
+        },
+        "bookingNote": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        }
+      }
+    },
+    "charging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "place",
+        "operator",
+        "power",
+        "access",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "place": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string"
+        },
+        "power": {
+          "type": "string"
+        },
+        "access": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "done"
+          ]
+        }
+      }
+    },
+    "budgetItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "estimate",
+        "status",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "alternative"
+          ]
+        },
+        "estimate": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/money"
+            },
+            {
+              "$ref": "#/$defs/moneyRange"
+            }
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "venueReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "category",
+        "status",
+        "reviews"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^venue-[a-z0-9][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "accommodation",
+            "dining",
+            "visitor"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "alternative"
+          ]
+        },
+        "reviews": {
+          "$ref": "#/$defs/reviewSummary"
+        }
+      }
+    },
+    "reviewSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checked",
+        "rating",
+        "ratingBasis",
+        "positive",
+        "negative",
+        "sources"
+      ],
+      "properties": {
+        "checked": {
+          "$ref": "#/$defs/date"
+        },
+        "rating": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "ratingBasis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "positive": {
+          "type": "string",
+          "minLength": 1
+        },
+        "negative": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exchangeRate",
+        "variableCosts",
+        "notes"
+      ],
+      "properties": {
+        "exchangeRate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "date",
+            "base",
+            "quote",
+            "quotePerBase",
+            "source"
+          ],
+          "properties": {
+            "date": {
+              "$ref": "#/$defs/date"
+            },
+            "base": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "quote": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "quotePerBase": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "source": {
+              "$ref": "#/$defs/source"
+            }
+          }
+        },
+        "variableCosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/budgetItem"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mapCoordinate": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      }
+    },
+    "routeMapRef": {
+      "type": "string",
+      "pattern": "^(waypoint|accommodation):[a-z0-9][a-z0-9-]*$"
+    },
+    "routeMapMarker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref"
+      ],
+      "properties": {
+        "ref": {
+          "$ref": "#/$defs/routeMapRef"
+        },
+        "icon": {
+          "type": "string",
+          "enum": [
+            "default",
+            "accent",
+            "end"
+          ]
+        }
+      }
+    },
+    "routeMapFerry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ferry",
+        "from",
+        "to"
+      ],
+      "properties": {
+        "ferry": {
+          "type": "string"
+        },
+        "from": {
+          "$ref": "#/$defs/routeMapRef"
+        },
+        "to": {
+          "$ref": "#/$defs/routeMapRef"
+        }
+      }
+    },
+    "routeMapRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "day",
+        "color",
+        "locations"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "day": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeMapRef"
+          },
+          "minItems": 2
+        }
+      }
+    },
+    "routeMapCacheRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "coordinates"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mapCoordinate"
+          },
+          "minItems": 2
+        }
+      }
+    },
+    "routeMapCache": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "profile",
+        "updatedAt",
+        "routes"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "const": "mapbox"
+        },
+        "profile": {
+          "type": "string",
+          "const": "driving"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeMapCacheRoute"
+          }
+        }
+      }
+    },
+    "routeMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "center",
+        "zoom",
+        "markers",
+        "ferries",
+        "routes",
+        "googleMaps",
+        "cache"
+      ],
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/coordinates"
+        },
+        "zoom": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "markers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeMapMarker"
+          },
+          "minItems": 1
+        },
+        "ferries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeMapFerry"
+          }
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeMapRoute"
+          },
+          "minItems": 1
+        },
+        "googleMaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routeMapRef"
+          },
+          "minItems": 2
+        },
+        "cache": {
+          "$ref": "#/$defs/routeMapCache"
+        }
+      }
+    },
+    "place": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "day",
+        "type",
+        "name",
+        "coordinates",
+        "notes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "day": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "coordinates": {
+          "$ref": "#/$defs/coordinates"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string",
+          "description": "Optional image URL for this place/waypoint (shown in map popups)."
+        }
+      }
+    },
+    "waypoint": {
+      "$ref": "#/$defs/place"
+    }
+  }
+}
